@@ -23,7 +23,7 @@ func SeperateValue(val int) [3]int {
 	return [3]int{val / 100, (val / 10) % 10, val % 10}
 }
 
-func IntInSlice(a int, nums [3]int) bool {
+func IntInSlice(a int, nums *[3]int) bool {
 	for _, v := range nums {
 		if v == a {
 			return true
@@ -32,26 +32,31 @@ func IntInSlice(a int, nums [3]int) bool {
 	return false
 }
 
+func RandomIntValue(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+func CheckDuplicate(idx int, nums *[3]int) bool {
+	r := RandomIntValue(1, 9)
+	for {
+		if IntInSlice(r, nums) {
+			r = RandomIntValue(1, 9)
+		} else {
+			nums[idx] = r
+			break
+		}
+	}
+	return true
+}
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	nums := [3]int{}
+	nums := [3]int{RandomIntValue(1, 9)}
 
-	nums[0] = rand.Intn(9) + 1
-	i := rand.Intn(9) + 1
-	for {
-		if i != nums[0] {
-			nums[1] = i
-			break
-		}
-		i = rand.Intn(9) + 1
+	for i := 1; i < len(nums); i++ {
+		CheckDuplicate(i, &nums)
 	}
-	for {
-		if i != nums[0] && i != nums[1] {
-			nums[2] = i
-			break
-		}
-		i = rand.Intn(9) + 1
-	}
+
 	fmt.Println(nums)
 
 	cnt := 1
@@ -71,12 +76,12 @@ func main() {
 				if nums[j] == sep_val[j] {
 					strike++
 				} else {
-					if IntInSlice(sep_val[j], nums) {
+					if IntInSlice(sep_val[j], &nums) {
 						ball++
 					}
 				}
 			}
-			fmt.Printf("스트라이크 %d 볼 %d", strike, ball)
+			fmt.Printf("스트라이크 %d 볼 %d \n", strike, ball)
 			if strike == 3 {
 				fmt.Println("3개의 숫자를 모두 맞히셨습니다! 게임 종료")
 				break
