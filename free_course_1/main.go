@@ -10,6 +10,8 @@ import (
 
 var stdin = bufio.NewReader(os.Stdin)
 
+const l = 3
+
 func InputIntValue() (int, error) {
 	var n int
 	_, err := fmt.Scanln(&n)
@@ -19,11 +21,11 @@ func InputIntValue() (int, error) {
 	return n, err
 }
 
-func SeperateValue(val int) [3]int {
-	return [3]int{val / 100, (val / 10) % 10, val % 10}
+func SeperateValue(val int) [l]int {
+	return [l]int{val / 100, (val / 10) % 10, val % 10}
 }
 
-func IntInSlice(a int, nums *[3]int) bool {
+func IntInSlice(a int, nums *[l]int) bool {
 	for _, v := range nums {
 		if v == a {
 			return true
@@ -49,45 +51,64 @@ func CheckDuplicate(idx int, nums *[3]int) bool {
 	return true
 }
 
-func main() {
+func InitializeGame() [l]int {
 	rand.Seed(time.Now().UnixNano())
-	nums := [3]int{RandomIntValue(1, 9)}
+	nums := [l]int{RandomIntValue(1, 9)}
 
 	for i := 1; i < len(nums); i++ {
 		CheckDuplicate(i, &nums)
 	}
+	return nums
+}
 
-	fmt.Println(nums)
+func CheckScore(sep_val [l]int, nums *[l]int) (int, int) {
+	strike := 0
+	ball := 0
+	for j := 0; j < 3; j++ {
+		if nums[j] == sep_val[j] {
+			strike++
+		} else if IntInSlice(sep_val[j], nums) {
+			ball++
+		}
+	}
+	return strike, ball
+}
 
-	cnt := 1
+func main() {
+
+OuterFor:
 	for {
-		fmt.Printf("숫자를 입력해주세요 : ")
-		n, err := InputIntValue()
-		if err != nil {
-			fmt.Println("숫자만 입력하세요.")
-		} else {
+		nums := InitializeGame()
+		fmt.Println(nums)
+
+		cnt := 1
+		for {
+			fmt.Printf("숫자를 입력해주세요 : ")
+			n, err := InputIntValue()
+			if err != nil {
+				fmt.Println("숫자만 입력하세요.")
+				continue
+			}
 			fmt.Println("입력하신 숫자는 ", n, " 입니다.")
 
 			sep_val := SeperateValue(n)
 			fmt.Println("입력한 숫자는 ", sep_val)
-			strike := 0
-			ball := 0
-			for j := 0; j < 3; j++ {
-				if nums[j] == sep_val[j] {
-					strike++
-				} else {
-					if IntInSlice(sep_val[j], &nums) {
-						ball++
-					}
-				}
-			}
+
+			strike, ball := CheckScore(sep_val, &nums)
 			fmt.Printf("스트라이크 %d 볼 %d \n", strike, ball)
+
 			if strike == 3 {
-				fmt.Println("3개의 숫자를 모두 맞히셨습니다! 게임 종료")
+				fmt.Printf("%d개의 숫자를 모두 맞히셨습니다! 게임 종료\n", l)
+				fmt.Printf("총 %d번의 시도를 하셨습니다. \n", cnt)
+
+				fmt.Printf("게임을 새로 시작하려면 1, 종료하려면 2를 입력하세요 : ")
+				game, _ := InputIntValue()
+				if game == 2 {
+					break OuterFor
+				}
 				break
 			}
 			cnt++
 		}
-
 	}
 }
